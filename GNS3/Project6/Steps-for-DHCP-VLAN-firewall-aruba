@@ -1,0 +1,169 @@
+Architecture
+
+Port1 → WAN (already configured)
+
+Port2 → VLAN Network 1 → DHCP: 10.10.10.0/24 & 172.16.10.0/24
+
+------------------------------------------------------------------------------
+config system interface
+    edit "VLAN10"
+        set vdom "root"
+        set interface "port2"
+        set vlanid 10
+        set ip 10.10.10.1 255.255.255.0
+    next
+
+    edit "VLAN20"
+        set vdom "root"
+        set interface "port2"
+        set vlanid 20
+        set ip 172.16.10.1 255.255.255.0
+    next
+end
+
+
+config system dhcp server
+    edit 10
+        set interface "VLAN10"
+        config ip-range
+            edit 1
+                set start-ip 10.10.10.10
+                set end-ip 10.10.10.200
+            next
+        end
+        set netmask 255.255.255.0
+        set default-gateway 10.10.10.1
+        set dns-server1 8.8.8.8
+    next
+end
+
+
+config system dhcp server
+    edit 20
+        set interface "VLAN20"
+        config ip-range
+            edit 1
+                set start-ip 172.16.10.10
+                set end-ip 172.16.10.200
+            next
+        end
+        set netmask 255.255.255.0
+        set default-gateway 172.16.10.1
+        set dns-server1 8.8.8.8
+    next
+end
+
+----------------------------------------------
+Internet Policy for VLAN10 & VLAN20
+----------------------------------------------
+
+
+config firewall policy
+    edit 1
+        set name "VLAN10-Internet"
+        set srcintf "VLAN10"
+        set dstintf "port1"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+
+    edit 2
+        set name "VLAN20-Internet"
+        set srcintf "VLAN20"
+        set dstintf "port1"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+end
+
+
+--------------------------
+Switch Port to FortiGate (g0/0) → TRUNK
+--------------------------
+
+conf t
+interface gig0/0
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+ spanning-tree portfast trunk
+
+------------------------
+Switch 1 to Switch 2 (g0/24) → TRUNK
+------------------------
+
+interface gig3/3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+ spanning-tree portfast trunk
+
+-----------------------------------------
+Access ports for PCs
+
+For example:
+PC1 in VLAN10
+PC2 in VLAN20
+PC3 in VLAN10
+----------------------------------------
+
+interface gig0/1
+ switchport mode access
+ switchport access vlan 10
+
+interface gig0/2
+ switchport mode access
+ switchport access vlan 20
+
+interface gig0/3
+ switchport mode access
+ switchport access vlan 10
+exit
+
+write memory
+
+copy running-config startup-config
+
+-----------------------------------
+Uplink switch 2 to Switch1 (g0/1) → TRUNK
+-----------------------------------
+
+conf t
+interface gig3/3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+ spanning-tree portfast trunk
+
+-----------------------------------------
+Access ports for PCs
+
+For example:
+PC1 in VLAN20
+PC2 in VLAN10
+PC3 in VLAN20
+----------------------------------------
+
+interface gig0/1
+ switchport mode access
+ switchport access vlan 20
+
+interface gig0/2
+ switchport mode access
+ switchport access vlan 10
+
+interface gig0/3
+ switchport mode access
+ switchport access vlan 20
+
+write memory
+
+copy running-config startup-config
