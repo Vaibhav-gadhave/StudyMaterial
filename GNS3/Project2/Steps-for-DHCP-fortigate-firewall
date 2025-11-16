@@ -1,0 +1,115 @@
+Architecture
+
+Port1 → WAN (already configured)
+
+Port2 → LAN Network 1 → DHCP: 10.10.10.0/24
+
+Port3 → LAN Network 2 → DHCP: 172.16.10.0/24
+
+
+------------------------------------------------------------------------------
+
+config system interface
+    edit "port2"
+        set ip 10.10.10.1 255.255.255.0
+        set allowaccess ping http https ssh
+        set type physical
+        set role lan
+    next
+end
+
+config system interface
+    edit "port3"
+        set ip 172.16.10.1 255.255.255.0
+        set allowaccess ping http https ssh
+        set type physical
+        set role lan
+    next
+end
+
+config system dhcp server
+    edit 2
+        set interface "port2"
+        set lease-time 86400
+        config ip-range
+            edit 1
+                set start-ip 10.10.10.10
+                set end-ip 10.10.10.200
+            next
+        end
+        set netmask 255.255.255.0
+        set default-gateway 10.10.10.1
+        set dns-server1 8.8.8.8
+        set dns-server2 1.1.1.1
+    next
+end
+
+config system dhcp server
+    edit 3
+        set interface "port3"
+        set lease-time 86400
+        config ip-range
+            edit 1
+                set start-ip 172.16.10.10
+                set end-ip 172.16.10.200
+            next
+        end
+        set netmask 255.255.255.0
+        set default-gateway 172.16.10.1
+        set dns-server1 8.8.8.8
+        set dns-server2 1.1.1.1
+    next
+end
+
+-------------------------------------------------------------------------------------------------
+Steps to enable internet on both the DHCP ports(2,3)
+------------------------------------------------------------------------------------------------
+
+
+config firewall policy
+    edit 2
+        set name "LAN2-INTERNET"
+        set srcintf "port2"
+        set dstintf "port1"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set service "ALL"
+        set schedule "always"
+        set nat enable
+    next
+end
+
+
+config firewall policy
+    edit 3
+        set name "LAN2-INTERNET"
+        set srcintf "port3"
+        set dstintf "port1"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set service "ALL"
+        set schedule "always"
+        set nat enable
+    next
+end
+
+-------------------------------------------------------------------------------------------------
+Steps to diable internet on any of the DHCP ports(2 or 3)
+------------------------------------------------------------------------------------------------
+
+config firewall policy
+edit 2
+set status disable
+next
+end
+
+
+config firewall policy
+edit 3
+set status disable
+next
+end
+
+
