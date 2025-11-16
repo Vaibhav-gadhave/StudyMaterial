@@ -1,0 +1,86 @@
+Architecture
+
+Switch1 → ssh enable on vlan1 ethernet port1
+
+Switch2 → ssh enable on vlan1 ethernet port1
+
+------------------------------------------------------------------------------
+Switch 1
+------------------------------------------------------------------------------
+
+enable
+conf ter
+hostname MySwitch1
+ip domain-name vaibhav.com
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret MyPassword123
+line vty 0 4
+transport input ssh
+login local
+exit
+
+conf t
+interface vlan 1
+ip address 10.10.10.20 255.255.255.0
+no shutdown
+exit
+
+show vlan brief
+
+show ip interface brief
+
+write memory
+
+copy running-config startup-config
+
+---------------------------
+
+NOw test ssh from firewall
+
+---------------------------
+
+ssh admin@192.168.122.89    ##  firewall
+
+execute ssh admin@10.10.10.20   ## cisco switch 1
+
+
+------------------------------------------------------------------------------
+Switch 2
+------------------------------------------------------------------------------
+
+enable
+conf ter
+hostname MySwitch2
+ip domain-name ashwini.com
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret MyPassword123
+line vty 0 4
+transport input ssh
+login local
+exit
+
+conf t
+interface vlan 1
+ip address 172.16.10.20 255.255.255.0
+no shutdown
+exit
+
+show vlan brief
+
+show ip interface brief
+
+write memory
+
+copy running-config startup-config
+
+---------------------------
+
+NOw test ssh from firewall
+
+---------------------------
+
+ssh admin@192.168.122.89    ##  firewall
+
+execute ssh admin@172.16.10.20   ## cisco switch 2
