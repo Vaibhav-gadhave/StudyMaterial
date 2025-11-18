@@ -118,11 +118,11 @@ PC3 in VLAN10
 interface gig0/1
  switchport mode access
  switchport access vlan 10
-exit
+
 interface gig0/2
  switchport mode access
  switchport access vlan 20
-exit
+
 interface gig0/3
  switchport mode access
  switchport access vlan 10

@@ -5,7 +5,7 @@ Switch1 → ssh enable on vlan1 ethernet port1
 Switch2 → ssh enable on vlan1 ethernet port1
 
 ------------------------------------------------------------------------------
-Switch 1
+Switch 1 ---- old 2019 switch
 ------------------------------------------------------------------------------
 
 enable
@@ -44,19 +44,30 @@ ssh admin@192.168.122.89    ##  firewall
 
 execute ssh admin@10.10.10.20   ## cisco switch 1
 
+----------------------------------------
+add in linux to do ssh
+
+vim ~/.ssh/config
+Host 10.10.10.20
+  KexAlgorithms +diffie-hellman-group1-sha1,diffie-hellman-group14-sha1
+  HostkeyAlgorithms +ssh-rsa
+
+----------------------------------------
 
 ------------------------------------------------------------------------------
-Switch 2
+Switch 2 ---- new 2020 switch
 ------------------------------------------------------------------------------
 
 enable
 conf ter
 hostname MySwitch2
-ip domain-name ashwini.com
-crypto key generate rsa modulus 1024
+ip domain-name vaibhav.com
+username admin password MyPassword123
 ip ssh version 2
-username admin privilege 15 secret MyPassword123
-line vty 0 4
+crypto key generate rsa 
+--> 2048
+
+line vty 0 15
 transport input ssh
 login local
 exit
@@ -86,8 +97,28 @@ ssh admin@192.168.122.89    ##  firewall
 execute ssh admin@172.16.10.20   ## cisco switch 2
 
 
+----------------------------------------
+add in linux to do ssh
 
+vim ~/.ssh/config
+Host 172.16.10.20
+  KexAlgorithms +diffie-hellman-group1-sha1,diffie-hellman-group14-sha1
+  HostkeyAlgorithms +ssh-rsa
 
+----------------------------------------
+
+Note:- 
+
+If you get this error , then follow below steps
+
+MySwitch2>enable
+% No password set
+
+configure terminal
+enable secret MyPassword123
+exit
+write memory
+copy running-config startup-config
 
 
 
